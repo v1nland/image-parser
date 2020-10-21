@@ -4,11 +4,12 @@
 # sudo python3 image_parser.py image2vec
 
 import os
-import cv2
+from cv2 import cv2
 import sys
 import numpy as np
 import gensim.models.word2vec as w2v # pip3 install gensim
 import pandas as pd # pip3 install pandas
+import argparse 
 
 from matplotlib import pyplot as plt
 from sklearn.manifold import TSNE # pip3 install sklearn
@@ -20,30 +21,39 @@ from PIL import Image
 def rgb2gray(rgb):
     return np.dot(rgb[...,:3], [0.2989, 0.5870, 0.1140])
 
-def vec2image(name):
+def vec2image(name,output,size, words):
     # open model
     model = w2v.Word2Vec.load(os.path.join("trained", name))
     model.init_sims()
 
-    # get normalized word vector, range [-1, 1]
-    norm_word = model.wv.word_vec('generation', use_norm=True)
-
-    # add 1 to each element, new range [0, 2]
-    norm_word = (norm_word + np.ones(256, dtype=int))
-    # and multiply by 127.5, new range [0, 255]
-    norm_word = (norm_word*127.5)
-    # reshape to 16x16 img
-    norm_word = norm_word.reshape(16,16)
-    
-    # print vector
-    print(norm_word)
-
+    # merge images
+    canvas = np.zeros((5*size,5*size),dtype=np.uint8)
+    words_file = open(words+".txt","r")
+    x_axis = 0
+    y_axis = 0
+    for line in words_file:
+        # get normalized word vector, range [-1, 1]
+        norm_word = model.wv.word_vec(line.rstrip("\n"), use_norm=True)
+        # add 1 to each element, new range [0, 2]
+        norm_word = (norm_word + np.ones(size*size, dtype=int))
+        # and multiply by 127.5, new range [0, 255]
+        norm_word = (norm_word*(size*size-1)/2)
+        # reshape to 16x16 img
+        norm_word = norm_word.reshape(size,size)
+        print(line.rstrip("\n"))
+        print(norm_word)
+        canvas[(x_axis*size):(x_axis*size+size),(y_axis*size):(y_axis*size+size)] = norm_word
+        x_axis = x_axis + 1
+        if x_axis == 5:
+            x_axis = 0
+            y_axis = y_axis+1
+            
     # write image to file
-    cv2.imwrite("vec2image.png", norm_word)
+    cv2.imwrite(output + ".png", canvas)
 
-def image2vec():
+def image2vec(input,output):
     # read image
-    im_array = cv2.imread("vec2image.png")
+    im_array = cv2.imread(input + ".png")
 
     # convert image from rgb to grayscale
     gray = rgb2gray(im_array)
@@ -52,29 +62,33 @@ def image2vec():
     print(gray)
 
     # save image
-    cv2.imwrite("image2vec.png", gray)
+    cv2.imwrite(output + ".png", gray)
 
     # # set grayscale
-    # plt.imshow(gray, cmap='gray', vmin=0, vmax=255)
+    # plt.imshow(gray, cmap="gray", vmin=0, vmax=255)
     # # remove axis
-    # plt.axis('off')
+    # plt.axis("off")
     # # save image
-    # plt.imsave("image2vec.png", im_array, cmap='gray')
+    # plt.imsave("image2vec.png", im_array, cmap="gray")
     # # show image
     # plt.show()
 
 def main():
-    if(len(sys.argv) < 2):
-        print("Missing arguments")
-        return
 
-    cmd = sys.argv[1]
-    model_name = 'corona.w2v'
+    #Arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model","-m", default = "corona.w2v", help = "Specify the model name (default = corona.w2v)")
+    parser.add_argument("--command","-c", required = True, help = "Command to specify the mode (vec2image/image2vec)")
+    parser.add_argument("--input", "-i", default = "vec2image", help = "Input file name for image2vec (default = vec2image)")
+    parser.add_argument("--output","-o", required = True ,help = "Output file name")
+    parser.add_argument("--size","-s", type = int , default = 16, help = "Size of the image generated (default = 16)")
+    parser.add_argument("--words", "-w", default = "words", help = "Words file name to read (default = words)")
+    opt = parser.parse_args()
 
-    if cmd == "vec2image":
-        vec2image(model_name)
-    elif cmd == "image2vec":
-        image2vec()
+    if opt.command == "vec2image":
+        vec2image(opt.model,opt.output, opt.size, opt.words)
+    elif opt.command == "image2vec":
+        image2vec(opt.input,opt.output)
 
 if __name__ == "__main__":
     main()
