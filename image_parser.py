@@ -22,11 +22,11 @@ def rgb2gray(rgb):
 
 def vec2image(name):
     # open model
-    model = w2v.Word2Vec.load(os.path.join("trained", name))
-    model.init_sims()
+    model = w2v.Word2Vec.load(os.path.join("trained", "corona.w2v"))
+    model.init_sims(replace=True)
 
     # get normalized word vector, range [-1, 1]
-    norm_word = model.wv.word_vec('generation', use_norm=True)
+    norm_word = model.wv.word_vec('trump', use_norm=True)
 
     # add 1 to each element, new range [0, 2]
     norm_word = (norm_word + np.ones(256, dtype=int))
@@ -36,20 +36,36 @@ def vec2image(name):
     norm_word = norm_word.reshape(16,16)
     
     # print vector
-    print(norm_word)
+    #print(norm_word)
+
+    print("Image created.")
 
     # write image to file
     cv2.imwrite("vec2image.png", norm_word)
 
 def image2vec():
+
+    model = w2v.Word2Vec.load(os.path.join("trained", "corona.w2v"))
+
     # read image
     im_array = cv2.imread("vec2image.png")
 
     # convert image from rgb to grayscale
     gray = rgb2gray(im_array)
 
-    # print resultant array
-    print(gray)
+    #reshape to an array
+    gray = gray.reshape(1,256)
+
+    #denormalize
+    gray = gray/127.5
+
+    gray = gray - np.ones(256, dtype=int)
+
+    #search in model
+    word = model.wv.most_similar(gray)
+
+    #print result
+    print("The obtained word is: " + word[0][0])
 
     # save image
     cv2.imwrite("image2vec.png", gray)
@@ -69,7 +85,7 @@ def main():
         return
 
     cmd = sys.argv[1]
-    model_name = 'corona.w2v'
+    model_name = 'word2vec_520-corona-tweets.w2v'
 
     if cmd == "vec2image":
         vec2image(model_name)
