@@ -61,10 +61,10 @@ def vec2image(name, output, size, words):
 
 def image2vec(name, input, output, size):
 
-    model = w2v.Word2Vec.load(os.path.join("trained", name))
+    model = w2v.Word2Vec.load(os.path.join('../word2vec/trained', name))
 
     # read image
-    im_array = cv2.imread(input + ".png")
+    im_array = cv2.imread('./generated/' + input + ".png")
 
     # convert image from rgb to grayscale
     gray = rgb2gray(im_array)
