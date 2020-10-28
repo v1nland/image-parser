@@ -34,7 +34,6 @@ def vec2image(name, output, size, words):
         for row in row_reader:
             # merge images
             canvas = np.zeros((5*size,5*size),dtype=np.uint8)
-            print(len(row))
             x_axis = 0
             y_axis = 0
             for word in row:
@@ -55,7 +54,7 @@ def vec2image(name, output, size, words):
                 except:
                     continue
             # write image to file
-            cv2.imwrite(output + str(i) + ".png", canvas)
+            cv2.imwrite("./generated/" + output + str(i) + ".png", canvas)
             i+=1
             
 
@@ -99,7 +98,7 @@ def image2vec(name, input, output, size):
     #print result
     print(f"The obtained tweet is:{final_tweet}")
 
-        # save image
+        #save image
         #cv2.imwrite(output + ".png", norm_word)
 
 def main():
