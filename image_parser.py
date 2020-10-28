@@ -22,13 +22,13 @@ def rgb2gray(rgb):
 
 def vec2image(name, output, size, words):
     # open model
-    model = w2v.Word2Vec.load(os.path.join("trained", name))
+    model = w2v.Word2Vec.load(os.path.join('../word2vec/trained', name))
     model.init_sims(replace=True)
 
 
     #words_file = open(words+".txt","r")
 
-    with open('corpus.csv', newline='') as csvfile:
+    with open('../word2vec/corpus.csv', newline='') as csvfile:
         row_reader = csv.reader(csvfile, delimiter = ' ')
         i=0
         for row in row_reader:
