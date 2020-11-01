@@ -33,7 +33,7 @@ def vec2image(name, output, size, words):
         i=0
         for row in row_reader:
             # merge images
-            canvas = np.zeros((5*size,5*size),dtype=np.uint8)
+            canvas = np.zeros((8*size,8*size),dtype=np.uint8)
             x_axis = 0
             y_axis = 0
             for word in row:
@@ -48,7 +48,7 @@ def vec2image(name, output, size, words):
                     norm_word = norm_word.reshape(size,size)
                     canvas[(x_axis*size):(x_axis*size+size),(y_axis*size):(y_axis*size+size)] = norm_word
                     y_axis = y_axis + 1
-                    if y_axis == 5:
+                    if y_axis == 8:
                         y_axis = 0
                         x_axis = x_axis+1
                 except:
@@ -67,16 +67,17 @@ def image2vec(name, input, output, size):
     im_array = cv2.imread('./generated/' + input + ".png")
 
     # convert image from rgb to grayscale
+    
     gray = rgb2gray(im_array)
 
     x_axis = 0
     y_axis = 0
     final_tweet = ""
 
-    for i in range(25):
+    for i in range(64):
         norm_word = gray[(x_axis*size):(x_axis*size+size),(y_axis*size):(y_axis*size+size)]
         y_axis = y_axis + 1
-        if y_axis == 5:
+        if y_axis == 8:
             y_axis = 0
             x_axis = x_axis+1
 
